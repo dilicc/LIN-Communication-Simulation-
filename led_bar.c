@@ -1,4 +1,4 @@
-#include "led_bar.h"
+#include "led_bar.c"
 
 // Implementacija funkcija za LED_bar
 void LEDBar_Init(void)
