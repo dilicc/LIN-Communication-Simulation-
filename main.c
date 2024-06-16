@@ -45,27 +45,64 @@ void vBatteryReceiveTask(void *pvParameters)
 {
     // Task kod za prijem podataka od akumulatora
     // Implementacija UniCom za kanal 0
+    int receivedData;
+    for (;;)
+    {
+        // Simulacija prijema podataka sa UniCom kanala 0
+        receivedData = UniCom_Receive(0);
+        xQueueSend(xDataQueue, &receivedData, portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
 }
 
 void vPCTxTask(void *pvParameters)
 {
     // Task kod za slanje podataka na PC
-    // Implementacija UniCom za kanal 1
+    int dataToSend;
+    for (;;)
+    {
+        if (xQueueReceive(xDataQueue, &dataToSend, portMAX_DELAY) == pdPASS)
+        {
+            UniCom_Send(1, dataToSend);
+        }
+    }
 }
 
 void vPCRxTask(void *pvParameters)
 {
     // Task kod za prijem podataka od PC-a
-    // Implementacija UniCom za kanal 1
+    int receivedData;
+    for (;;)
+    {
+        receivedData = UniCom_Receive(1);
+        xQueueSend(xDataQueue, &receivedData, portMAX_DELAY);
+    }
 }
 
 void vDataProcessingTask(void *pvParameters)
 {
     // Task kod za obradu podataka
+    int receivedData;
+    for (;;)
+    {
+        if (xQueueReceive(xDataQueue, &receivedData, portMAX_DELAY) == pdPASS)
+        {
+            // Obrada podataka
+            int processedData = receivedData * 2; // Primer obrade podataka
+            xQueueSend(xDataQueue, &processedData, portMAX_DELAY);
+        }
+    }
 }
 
 void vDisplayTask(void *pvParameters)
 {
     // Task kod za prikaz podataka na displeju
-    // Implementacija Seg7Mux
+    int dataToDisplay;
+    for (;;)
+    {
+        if (xQueueReceive(xDataQueue, &dataToDisplay, portMAX_DELAY) == pdPASS)
+        {
+            Seg7Mux_Display(dataToDisplay);
+        }
+    }
 }
